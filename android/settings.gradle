@@ -1,0 +1,31 @@
+pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
+plugins { id("com.facebook.react.settings") }
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+rootProject.name = 'JniSandbox'
+include ':app'
+includeBuild('../node_modules/@react-native/gradle-plugin')
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://us-central1-maven.pkg.dev/novaxfly/maven-acslib")
+            credentials {
+                username = "_token"
+                password = {
+                    def isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
+                    def command = isWindows ? ["cmd", "/c", "gcloud", "auth", "print-access-token"]
+                                           : ["gcloud", "auth", "print-access-token"]
+                    def process = new ProcessBuilder(command).start()
+                    def token = process.inputStream.text.trim()
+                    def error = process.errorStream.text.trim()
+                    if (token.isEmpty()) {
+                        throw new GradleException("gcloud 토큰을 가져오지 못했습니다. 에러: $error")
+                    }
+                    token
+                }()
+            }
+        }
+    }
+}
